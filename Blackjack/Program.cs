@@ -28,7 +28,6 @@ namespace Blackjack
                 }
 
                 isPlaying = WantsToPlay();
-
             }
             
         }
@@ -36,7 +35,8 @@ namespace Blackjack
         private static bool WantsToPlay()
         {
             Console.WriteLine("Would you like to play BlackJack \nY/N");
-            bool isPlaying = Console.ReadLine().ToString().Trim().ToLower() == "y";
+            var character = Console.ReadKey().KeyChar.ToString().ToLower();
+            bool isPlaying = character == "y";
             Console.Clear();
 
             return isPlaying;
@@ -52,7 +52,6 @@ namespace Blackjack
 
             do
             {
-
                 if (playersHand.HasBusted())
                 {
                     Console.WriteLine("Looks like you have busted");
@@ -60,32 +59,38 @@ namespace Blackjack
                     break;
                 }
 
-                Console.WriteLine($"you have a hand of {playersHand.HandValuesString()} and the dealer has {dealersHand.Cards.First().Value} showing.\n would you like to hit or stay?\nY/N");
-                hit = Console.ReadLine().ToString().Trim().ToLower() == "y";
+                GameInfo(playersHand.HandValuesString(), dealersHand.Cards.First().Value.ToString());
 
+                Console.WriteLine("Would you like to hit?\nY/N");
+
+                hit = Console.ReadKey().KeyChar.ToString().ToLower() == "y";
+
+                Console.Clear();
                 if (hit)
                 {
                     playersHand.Cards.Add(new Card());
                     busted = playersHand.HasBusted();
-                    if(busted)
+                    if (busted)
                     {
+                        GameInfo(playersHand.HandValuesString(), dealersHand.HandValuesString());
                         GameOver = true;
                     }
-                  
                 }
                 else
                 {
                     Console.WriteLine($"Dealer flip a {dealersHand.Cards.Last().Value} and has a total of {dealersHand.HandValuesString()}");
                     do
                     {
-                      
+                        PressAnyKeyToContinue();
+
                         if (dealersHand.HandValues().First() <= 16)
                         {
                             dealersHand.Cards.Add(new Card());
+                            GameInfo(playersHand.HandValuesString(), dealersHand.HandValuesString());
+                            Console.WriteLine($"Dealer Hits and get a  {dealersHand.HandValuesString()}");
                         }
 
-                        Console.WriteLine($"Dealer Hits and get a  {dealersHand.HandValuesString()}");
-                    } while (dealersHand.HandValues().First() <= 16 ); // TO FIX.
+                    } while (dealersHand.HandValues().First() <= 16); // TO FIX.
 
                     beatDealer = (dealersHand.HasBusted() || dealersHand.HandValues().Last() >= playersHand.HandValues().Last());
                     if (beatDealer)
@@ -112,68 +117,17 @@ namespace Blackjack
 
             return playerWin;
         }
-    }
 
-    public class Card
-    {
-        public Card()
+        private static void GameInfo(string playersHand, string dealersHand)
         {
-            Value = new Random().Next(1, 11);
-            if (Value == 1 || Value == 11 )
-            {
-                IsAce = true;
-            }
+            Console.WriteLine($"Your hand:{playersHand}   Dealer hand:{dealersHand}");
         }
 
-        public int Value { get; set; }
-        public bool IsAce { get; set; }
-    }
-
-    public class Hand
-    {
-       
-     
-        public List<Card> Cards { get; set; }
-
-        public bool HasBusted ()
+        private static void PressAnyKeyToContinue()
         {
-             return HandValues().Count() == 0;
-        }
-
-        public List<int> HandValues()
-        {
-            List<int> possibleValues = new List<int>();
-            int value = Cards.Where(x => !x.IsAce).ToList().Sum(x=>x.Value);
-              
-            possibleValues.Add(value);
-
-            foreach(Card card in Cards.Where(x=> x.IsAce))
-            {
-
-                possibleValues = new List<int>()
-                {
-                    value++,
-                    value+11
-                };
-
-                value = value++;
-            }
-
-            return possibleValues.Where(x => x <= 21).ToList();
-        }
-
-        public string HandValuesString()
-        {
-            var handValues = HandValues();
-            if (handValues.Count == 2)
-            {
-                return $"{handValues.First().ToString()} or  {handValues.Last().ToString()}";
-            }
-            else
-            {
-                return handValues.First().ToString();
-            }
-
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+            Console.Clear();
         }
     }
 }
